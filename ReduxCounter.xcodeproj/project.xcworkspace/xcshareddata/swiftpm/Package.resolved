@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Redux",
+        "repositoryURL": "git@github.com:ReactComponentKit/Redux.git",
+        "state": {
+          "branch": null,
+          "revision": "57dfc4d3ca7e0b96ba8bf8538c72427b2dfba522",
+          "version": "0.0.2"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
