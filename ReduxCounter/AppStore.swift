@@ -46,18 +46,13 @@ func counterReducer(state: State, action: Action) -> State {
 
 struct AsyncIncrementAction: Action {
     var middlewares: [Middleware] = [
-        logging,
         asyncJob
     ]
 }
 
 struct IncrementAction: Action {
     let payload: Int
-    
-    var middlewares: [Middleware] = [
-        logging
-    ]
-    
+        
     var reducers: [Reducer] = [
         counterReducer
     ]
@@ -69,11 +64,7 @@ struct IncrementAction: Action {
 
 struct DecrementAction: Action {
     let payload: Int
-    
-    var middlewares: [Middleware] = [
-        logging
-    ]
-    
+        
     var reducers: [Reducer] = [
         counterReducer
     ]
@@ -85,7 +76,6 @@ struct DecrementAction: Action {
 
 struct TestAsyncErrorAction: Action {
     var middlewares: [Middleware] = [
-        logging,
         asyncJobWithError
     ]
 }
@@ -96,4 +86,8 @@ struct AppState: State {
 }
 
 class AppStore: Store<AppState> {
+    override func afterProcessingAction(state: AppState, action: Action) {
+        print("[## \(type(of: action)) ##]")
+        print(state)
+    }
 }
