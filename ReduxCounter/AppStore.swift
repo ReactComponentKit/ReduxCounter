@@ -12,51 +12,34 @@ enum MyError: Error {
     case tempError
 }
 
-func logging(state: State, action: Action, dispatcher: @escaping ActionDispatcher) {
-    print("logging")
-    print(state)
-}
-
-func asyncJob(state: State, action: Action, dispatcher: @escaping ActionDispatcher) {
+func asyncJob(state: AppState, action: Action, dispatcher: @escaping ActionDispatcher) {
     Thread.sleep(forTimeInterval: 2)
     dispatcher(IncrementAction(payload: 2))
 }
 
-func asyncJobWithError(state: State, action: Action, dispatcher: @escaping ActionDispatcher) throws {
+func asyncJobWithError(state: AppState, action: Action, dispatcher: @escaping ActionDispatcher) throws {
     Thread.sleep(forTimeInterval: 2)
     throw MyError.tempError
 }
 
-func counterReducer(state: State, action: Action) -> State {
-    guard var mutableState = state as? AppState else {
-        return state
+func counterReducer(state: AppState, action: Action) -> AppState {
+    return state.copy { mutation in
+        switch action {
+        case let act as IncrementAction:
+            mutation.count += act.payload
+        case let act as DecrementAction:
+            mutation.count -= act.payload
+        default:
+            break
+        }
     }
-    
-    switch action {
-    case let act as IncrementAction:
-        mutableState.count += act.payload
-    case let act as DecrementAction:
-        mutableState.count -= act.payload
-    default:
-        break
-    }
-    
-    return mutableState
 }
 
 struct AsyncIncrementAction: Action {
-    var middlewares: [Middleware] = [
-        asyncJob
-    ]
 }
 
 struct IncrementAction: Action {
     let payload: Int
-        
-    var reducers: [Reducer] = [
-        counterReducer
-    ]
-    
     init(payload: Int = 1) {
         self.payload = payload
     }
@@ -64,20 +47,12 @@ struct IncrementAction: Action {
 
 struct DecrementAction: Action {
     let payload: Int
-        
-    var reducers: [Reducer] = [
-        counterReducer
-    ]
-    
     init(payload: Int = 1) {
         self.payload = payload
     }
 }
 
 struct TestAsyncErrorAction: Action {
-    var middlewares: [Middleware] = [
-        asyncJobWithError
-    ]
 }
 
 struct AppState: State {
@@ -89,5 +64,27 @@ class AppStore: Store<AppState> {
     override func afterProcessingAction(state: AppState, action: Action) {
         print("[## \(type(of: action)) ##]")
         print(state)
+    }
+    
+    override func registerJobs() {
+        process(action: AsyncIncrementAction.self) {
+            Job(middleware: [asyncJob])
+        }
+        
+        process(action: IncrementAction.self) {
+            Job(reducers: [counterReducer]) { state, newState in
+                state.count = newState.count
+            }
+        }
+        
+        process(action: DecrementAction.self) {
+            Job(reducers: [counterReducer]) { state, newState in
+                state.count = newState.count
+            }
+        }
+        
+        process(action: TestAsyncErrorAction.self) {
+            Job(middleware: [asyncJobWithError])
+        }
     }
 }
