@@ -53,8 +53,20 @@ struct ContentView: View {
                         .multilineTextAlignment(.center)
                 }
             }
-            .padding(.horizontal, 100)
+            VStack {
+                Button(action: { store.dispatch(action: RequestContentAction()) }) {
+                    Text("Fetch Content")
+                        .bold()
+                        .multilineTextAlignment(.center)
+                }
+                ScrollView(.vertical) {
+                    Text(store.state.content.value ?? store.state.content.error?.localizedDescription ?? "")
+                }
+                .frame(width: UIApplication.shared.windows.first?.frame.width)
+            }
+            
         }
+        .padding(.horizontal, 100)
     }
 }
 
