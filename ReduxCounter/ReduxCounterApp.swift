@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct ReduxCounterApp: App {
-    @ObservedObject
+    @StateObject
     private var store: AppStore = AppStore()
     
     var body: some Scene {
