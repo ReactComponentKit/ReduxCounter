@@ -12,8 +12,12 @@ enum MyError: Error {
     case tempError
 }
 
-func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEffect) {
-    var (dispatch, cancellable) = sideEffect()
+func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
+    let (dispatch, context) = sideEffect()
+    
+    let store: AppStore = context.store()
+    print(store.sharedVariableAmongMiddlewares)
+    
     URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.google.com")!)
         .subscribe(on: DispatchQueue.global())
         .receive(on: DispatchQueue.global())
@@ -28,16 +32,16 @@ func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEff
             let value = String(data: data, encoding: .utf8) ?? ""
             dispatch(UpdateContentAction(content: .success(value: value)))
         }
-        .store(in: &cancellable)
+        .store(in: &context.cancellables)
 }
 
-func asyncJob(state: AppState, action: Action, sideEffect: @escaping SideEffect) {
+func asyncJob(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
     let (dispatcher, _) = sideEffect()
     Thread.sleep(forTimeInterval: 2)
     dispatcher(IncrementAction(payload: 2))
 }
 
-func asyncJobWithError(state: AppState, action: Action, sideEffect: @escaping SideEffect) throws {
+func asyncJobWithError(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) throws {
     Thread.sleep(forTimeInterval: 2)
     throw MyError.tempError
 }
@@ -123,6 +127,9 @@ struct AppState: State {
 }
 
 class AppStore: Store<AppState> {
+    
+    internal var sharedVariableAmongMiddlewares: String = "Hello Middleware!"
+    
     override func afterProcessingAction(state: AppState, action: Action) {
         print("[## \(type(of: action)) ##]")
         print(state)
