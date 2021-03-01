@@ -15,11 +15,11 @@ struct ContentView: View {
     var body: some View {
         
         VStack {
-            Text("\(store.state.count)")
+            Text("\(store.count)")
                 .font(.title)
                 .bold()
                 .padding()
-            if store.state.error != nil {
+            if store.error != nil {
                 Text("Error!")
             }
             HStack {
@@ -31,7 +31,16 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                Button(action: { store.dispatch(action: IncrementAction()) }) {
+                Button(action: {
+                    // You can dispatch action in this style
+                    // store.dispatch(action: IncrementAction())
+                    // or below style.
+                    store.dispatch(\.count, payload: 1) { (state, value) -> AppState in
+                        return state.copy { mutation in
+                            mutation.count += value
+                        }
+                    }
+                }) {
                     Text(" + ")
                         .font(.title)
                         .bold()
@@ -60,13 +69,20 @@ struct ContentView: View {
                         .multilineTextAlignment(.center)
                 }
                 ScrollView(.vertical) {
-                    Text(store.state.content.value ?? store.state.content.error?.localizedDescription ?? "")
+                    Text(store.content.value ?? store.content.error?.localizedDescription ?? "")
                 }
                 .frame(width: UIApplication.shared.windows.first?.frame.width)
             }
             
         }
         .padding(.horizontal, 100)
+        .onReceive(store.$state) { value in
+            print(value.count)
+        }
+        .onChange(of: store.count) { value in
+            // handle side effects
+            print(value)
+        }
     }
 }
 

@@ -13,11 +13,12 @@ enum MyError: Error {
 }
 
 func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
-    let (dispatch, context) = sideEffect()
+    let (_, context) = sideEffect()
     
     let store: AppStore = context.store()
     print(store.sharedVariableAmongMiddlewares)
     
+    context.updateAsync(\.content, payload: .loading)
     URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.google.com")!)
         .subscribe(on: DispatchQueue.global())
         .receive(on: DispatchQueue.global())
@@ -26,11 +27,11 @@ func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEff
             case .finished:
                 break
             case .failure(let error):
-                dispatch(UpdateContentAction(content: .failed(error: error)))
+                context.updateAsync(\.content, payload: .failed(error: error))
             }
         } receiveValue: { (data, response) in
             let value = String(data: data, encoding: .utf8) ?? ""
-            dispatch(UpdateContentAction(content: .success(value: value)))
+            context.updateAsync(\.content, payload: .success(value: value))
         }
         .store(in: &context.cancellables)
 }
@@ -59,15 +60,8 @@ func counterReducer(state: AppState, action: Action) -> AppState {
     }
 }
 
-func updateContent(state: AppState, action: Action) -> AppState {
-    guard let action = action as? UpdateContentAction else { return state }
-    return state.copy { mutation in
-        mutation.content = action.content
-    }
-}
-
 struct AsyncIncrementAction: Action {
-    static var job: ActionJob {
+    var job: ActionJob {
         Job<AppState>(middleware: [asyncJob])
     }
 }
@@ -78,10 +72,8 @@ struct IncrementAction: Action {
         self.payload = payload
     }
     
-    static var job: ActionJob {
-        Job<AppState>(reducers: [counterReducer]) { state, newState in
-            state.count = newState.count
-        }
+    var job: ActionJob {
+        Job<AppState>(keyPath: \.count, reducers: [counterReducer])
     }
 }
 
@@ -91,32 +83,20 @@ struct DecrementAction: Action {
         self.payload = payload
     }
     
-    static var job: ActionJob {
-        Job(reducers: [counterReducer]) { state, newState in
-            state.count = newState.count
-        }
+    var job: ActionJob {
+        Job(keyPath: \.count, reducers: [counterReducer])
     }
 }
 
 struct TestAsyncErrorAction: Action {
-    static var job: ActionJob {
+    var job: ActionJob {
         Job<AppState>(middleware: [asyncJobWithError])
     }
 }
 
 struct RequestContentAction: Action {
-    static var job: ActionJob {
+    var job: ActionJob {
         Job<AppState>(middleware: [fetchContent])
-    }
-}
-
-struct UpdateContentAction: Action {
-    let content: Async<String>
-    
-    static var job: ActionJob {
-        Job<AppState>(reducers: [updateContent]) { (state, newState) in
-            state.content = newState.content
-        }
     }
 }
 
@@ -127,7 +107,6 @@ struct AppState: State {
 }
 
 class AppStore: Store<AppState> {
-    
     internal var sharedVariableAmongMiddlewares: String = "Hello Middleware!"
     
     override func afterProcessingAction(state: AppState, action: Action) {

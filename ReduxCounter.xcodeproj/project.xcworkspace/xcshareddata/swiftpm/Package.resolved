@@ -6,8 +6,8 @@
         "repositoryURL": "git@github.com:ReactComponentKit/Redux.git",
         "state": {
           "branch": null,
-          "revision": "e036528abb3f4296e711e66e20d60fadbb64f9c8",
-          "version": "0.0.22"
+          "revision": "ac97c7003df3fb35536303188a8780a07dbbe363",
+          "version": "0.0.24"
         }
       }
     ]
