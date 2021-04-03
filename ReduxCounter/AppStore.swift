@@ -13,9 +13,8 @@ enum MyError: Error {
 }
 
 func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
-    let (_, ctx) = sideEffect()
     guard
-        let context = ctx,
+        let context = sideEffect(),
         let store: AppStore = context.store()
     else {
         return
@@ -27,29 +26,29 @@ func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEff
     URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.google.com")!)
         .subscribe(on: DispatchQueue.global())
         .receive(on: DispatchQueue.global())
-        .sink { (completion) in
+        .sink { [weak context] (completion) in
             switch completion {
             case .finished:
                 break
             case .failure(let error):
-                context.updateAsync(\.content, payload: .failed(error: error))
+                context?.updateAsync(\.content, payload: .failed(error: error))
             }
-        } receiveValue: { (data, response) in
+        } receiveValue: { [weak context] (data, response) in
             let value = String(data: data, encoding: .utf8) ?? ""
-            context.updateAsync(\.content, payload: .success(value: value))
+            context?.updateAsync(\.content, payload: .success(value: value))
         }
-        .cancel(with: context.cancelBag)
+        .cancel(with: context.cancellable)
 }
 
 func asyncJob(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
-    let (dispatcher, _) = sideEffect()
     Thread.sleep(forTimeInterval: 2)
-    dispatcher(IncrementAction(payload: 2))
+    let context = sideEffect()
+    context?.dispatch(action: IncrementAction(payload: 2))
 }
 
 func asyncJobWithError(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
     Thread.sleep(forTimeInterval: 2)
-    let (_, context) = sideEffect()
+    let context = sideEffect()
     context?.dispatch(\.error, payload: (MyError.tempError, action)) { (state, error) -> AppState in
         return state.copy { mutable in
             mutable.error = error
@@ -119,6 +118,9 @@ struct AppState: State {
 class AppStore: Store<AppState> {
     internal var sharedVariableAmongMiddlewares: String = "Hello Middleware!"
     
+    @Published
+    var count: Int = 0
+    
     override func beforeProcessingAction(state: AppState, action: Action) -> (AppState, Action)? {
         return (
             state.copy({ mutation in
@@ -130,6 +132,9 @@ class AppStore: Store<AppState> {
     
     override func afterProcessingAction(state: AppState, action: Action) {
         print("[## \(type(of: action)) ##]")
-        print(state)
+        if self.count != state.count {
+            self.count = state.count
+            print(self.count)
+        }
     }
 }

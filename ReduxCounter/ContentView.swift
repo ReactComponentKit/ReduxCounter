@@ -76,13 +76,6 @@ struct ContentView: View {
             
         }
         .padding(.horizontal, 100)
-        .onReceive(store.$state) { value in
-            print(value.count)
-        }
-        .onChange(of: store.count) { value in
-            // handle side effects
-            print(value)
-        }
     }
 }
 
