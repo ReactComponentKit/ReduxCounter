@@ -13,9 +13,14 @@ enum MyError: Error {
 }
 
 func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
-    let (_, context) = sideEffect()
+    let (_, ctx) = sideEffect()
+    guard
+        let context = ctx,
+        let store: AppStore = context.store()
+    else {
+        return
+    }
     
-    let store: AppStore = context.store()
     print(store.sharedVariableAmongMiddlewares)
     
     context.updateAsync(\.content, payload: .loading)
@@ -33,7 +38,7 @@ func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEff
             let value = String(data: data, encoding: .utf8) ?? ""
             context.updateAsync(\.content, payload: .success(value: value))
         }
-        .store(in: &context.cancellables)
+        .cancel(with: context.cancelBag)
 }
 
 func asyncJob(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
@@ -42,9 +47,14 @@ func asyncJob(state: AppState, action: Action, sideEffect: @escaping SideEffect<
     dispatcher(IncrementAction(payload: 2))
 }
 
-func asyncJobWithError(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) throws {
+func asyncJobWithError(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
     Thread.sleep(forTimeInterval: 2)
-    throw MyError.tempError
+    let (_, context) = sideEffect()
+    context?.dispatch(\.error, payload: (MyError.tempError, action)) { (state, error) -> AppState in
+        return state.copy { mutable in
+            mutable.error = error
+        }
+    }
 }
 
 func counterReducer(state: AppState, action: Action) -> AppState {
@@ -108,6 +118,15 @@ struct AppState: State {
 
 class AppStore: Store<AppState> {
     internal var sharedVariableAmongMiddlewares: String = "Hello Middleware!"
+    
+    override func beforeProcessingAction(state: AppState, action: Action) -> (AppState, Action)? {
+        return (
+            state.copy({ mutation in
+                mutation.error = nil
+            }),
+            action
+        )
+    }
     
     override func afterProcessingAction(state: AppState, action: Action) {
         print("[## \(type(of: action)) ##]")
