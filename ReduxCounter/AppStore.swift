@@ -8,133 +8,80 @@
 import Foundation
 import Redux
 
-enum MyError: Error {
-    case tempError
-}
-
-func fetchContent(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
-    guard
-        let context = sideEffect(),
-        let store: AppStore = context.store()
-    else {
-        return
-    }
-    
-    print(store.sharedVariableAmongMiddlewares)
-    
-    context.updateAsync(\.content, payload: .loading)
-    URLSession.shared.dataTaskPublisher(for: URL(string: "https://www.google.com")!)
-        .subscribe(on: DispatchQueue.global())
-        .receive(on: DispatchQueue.global())
-        .sink { [weak context] (completion) in
-            switch completion {
-            case .finished:
-                break
-            case .failure(let error):
-                context?.updateAsync(\.content, payload: .failed(error: error))
-            }
-        } receiveValue: { [weak context] (data, response) in
-            let value = String(data: data, encoding: .utf8) ?? ""
-            context?.updateAsync(\.content, payload: .success(value: value))
-        }
-        .cancel(with: context.cancellable)
-}
-
-func asyncJob(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
-    Thread.sleep(forTimeInterval: 2)
-    let context = sideEffect()
-    context?.dispatch(action: IncrementAction(payload: 2))
-}
-
-func asyncJobWithError(state: AppState, action: Action, sideEffect: @escaping SideEffect<AppState>) {
-    Thread.sleep(forTimeInterval: 2)
-    let context = sideEffect()
-    context?.dispatch(\.error, payload: (MyError.tempError, action)) { (state, error) -> AppState in
-        return state.copy { mutable in
-            mutable.error = error
-        }
-    }
-}
-
-func counterReducer(state: AppState, action: Action) -> AppState {
-    return state.copy { mutation in
-        switch action {
-        case let act as IncrementAction:
-            mutation.count += act.payload
-        case let act as DecrementAction:
-            mutation.count -= act.payload
-        default:
-            break
-        }
-    }
-}
-
-struct AsyncIncrementAction: Action {
-    var job: ActionJob {
-        Job<AppState>(middleware: [asyncJob])
-    }
-}
-
-struct IncrementAction: Action {
-    let payload: Int
-    init(payload: Int = 1) {
-        self.payload = payload
-    }
-    
-    var job: ActionJob {
-        Job<AppState>(keyPath: \.count, reducers: [counterReducer])
-    }
-}
-
-struct DecrementAction: Action {
-    let payload: Int
-    init(payload: Int = 1) {
-        self.payload = payload
-    }
-    
-    var job: ActionJob {
-        Job(keyPath: \.count, reducers: [counterReducer])
-    }
-}
-
-struct TestAsyncErrorAction: Action {
-    var job: ActionJob {
-        Job<AppState>(middleware: [asyncJobWithError])
-    }
-}
-
-struct RequestContentAction: Action {
-    var job: ActionJob {
-        Job<AppState>(middleware: [fetchContent])
-    }
-}
-
 struct AppState: State {
     var count: Int = 0
-    var content: Async<String> = .uninitialized
-    var error: (Error, Action)?
+    var content: String? = nil
+    var error: String? = nil
 }
 
 class AppStore: Store<AppState> {
-    internal var sharedVariableAmongMiddlewares: String = "Hello Middleware!"
+    
+    init() {
+        super.init(state: AppState())
+    }
     
     @Published
     var count: Int = 0
     
-    override func beforeProcessingAction(state: AppState, action: Action) -> (AppState, Action)? {
-        return (
-            state.copy({ mutation in
-                mutation.error = nil
-            }),
-            action
-        )
+    @Published
+    var content: String? = nil
+    
+    @Published
+    var error: String? = nil
+    
+    override func computed(new: AppState, old: AppState) {
+        self.count = new.count;
+        if let content = new.content {
+            self.content = content
+        }
+        if let error = new.error {
+            self.error = error
+        }
     }
     
-    override func afterProcessingAction(state: AppState, action: Action) {
-        print("[## \(type(of: action)) ##]")
-        if self.count != state.count {
-            self.count = state.count
-            print(self.count)
+    override func worksBeforeCommit() -> [(inout AppState) -> Void] {
+        return [ { (mutableState) in
+            mutableState.error = nil
+        }]
+    }
+    
+    override func worksAfterCommit() -> [(inout AppState) -> Void] {
+        return [ { state in
+            print(state.count)
+        }]
+    }
+    
+    private func INCREMENT(state: inout AppState, payload: Int) {
+        state.count += payload
+    }
+    
+    private func DECREMENT(state: inout AppState, payload: Int) {
+        state.count -= payload
+    }
+    
+    private func SET_CONTENT(state: inout AppState, payload: String) {
+        state.content = payload
+    }
+    
+    private func SET_ERROR(state: inout AppState, payload: String) {
+        state.error = payload
+    }
+    
+    func incrementAction(payload: Int) {
+        commit(mutation: INCREMENT, payload: payload)
+    }
+    
+    func decrementAction(payload: Int) {
+        commit(mutation: DECREMENT, payload: payload)
+    }
+    
+    func fetchContent() async {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: URL(string: "https://www.google.com")!)
+            let value = String(data: data, encoding: .utf8) ?? ""
+            commit(mutation: SET_CONTENT, payload: value)
+        } catch {
+            commit(mutation: SET_ERROR, payload: error.localizedDescription)
         }
     }
 }

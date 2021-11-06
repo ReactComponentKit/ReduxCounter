@@ -5,8 +5,8 @@
         "package": "Redux",
         "repositoryURL": "git@github.com:ReactComponentKit/Redux.git",
         "state": {
-          "branch": "feature/adjust-scheduler",
-          "revision": "745e5e4a3cde73ba003c858c95162d2d98a24cef",
+          "branch": "redux/next",
+          "revision": "8d5717be3ce361cc0c014a32d45330815bf4042d",
           "version": null
         }
       }

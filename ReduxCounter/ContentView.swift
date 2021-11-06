@@ -19,11 +19,13 @@ struct ContentView: View {
                 .font(.title)
                 .bold()
                 .padding()
-            if store.error != nil {
-                Text("Error!")
+            if let error = store.error {
+                Text("Error! \(error)")
             }
             HStack {
-                Button(action: { store.dispatch(action: DecrementAction()) }) {
+                Spacer()
+                
+                Button(action: { store.decrementAction(payload: 1) }) {
                     Text(" - ")
                         .font(.title)
                         .bold()
@@ -31,16 +33,7 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    // You can dispatch action in this style
-                    // store.dispatch(action: IncrementAction())
-                    // or below style.
-                    store.dispatch(\.count, payload: 1) { (state, value) -> AppState in
-                        return state.copy { mutation in
-                            mutation.count += value
-                        }
-                    }
-                }) {
+                Button(action: { store.incrementAction(payload: 1) }) {
                     Text(" + ")
                         .font(.title)
                         .bold()
@@ -48,32 +41,22 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                Button(action: { store.dispatch(action: AsyncIncrementAction()) }) {
-                    Text("Async +")
-                        .bold()
-                        .multilineTextAlignment(.center)
-                }
-                
-                Spacer()
-                
-                Button(action: { store.dispatch(action: TestAsyncErrorAction()) }) {
-                    Text(" Async with Error ")
-                        .bold()
-                        .multilineTextAlignment(.center)
-                }
             }
             VStack {
-                Button(action: { store.dispatch(action: RequestContentAction()) }) {
+                Button(action: {
+                    Task {
+                        await store.fetchContent()
+                    }
+                }) {
                     Text("Fetch Content")
                         .bold()
                         .multilineTextAlignment(.center)
                 }
                 ScrollView(.vertical) {
-                    Text(store.content.value ?? store.content.error?.localizedDescription ?? "")
+                    Text(store.content ?? "")
                 }
-                .frame(width: UIApplication.shared.windows.first?.frame.width)
+                .frame(width: UIScreen.main.bounds.width)
             }
-            
         }
         .padding(.horizontal, 100)
     }
