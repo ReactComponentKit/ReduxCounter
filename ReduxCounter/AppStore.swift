@@ -30,12 +30,14 @@ class AppStore: Store<AppState> {
     var error: String? = nil
     
     override func computed(new: AppState, old: AppState) {
-        self.count = new.count;
-        if let content = new.content {
-            self.content = content
-        }
-        if let error = new.error {
-            self.error = error
+        DispatchQueue.main.async {
+            self.count = new.count;
+            if let content = new.content {
+                self.content = content
+            }
+            if let error = new.error {
+                self.error = error
+            }
         }
     }
     
@@ -74,7 +76,7 @@ class AppStore: Store<AppState> {
     func decrementAction(payload: Int) {
         commit(mutation: DECREMENT, payload: payload)
     }
-    
+
     func fetchContent() async {
         do {
             let (data, _) = try await URLSession.shared.data(from: URL(string: "https://www.google.com")!)
