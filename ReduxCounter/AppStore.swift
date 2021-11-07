@@ -30,15 +30,9 @@ class AppStore: Store<AppState> {
     var error: String? = nil
     
     override func computed(new: AppState, old: AppState) {
-        DispatchQueue.main.async {
-            self.count = new.count;
-            if let content = new.content {
-                self.content = content
-            }
-            if let error = new.error {
-                self.error = error
-            }
-        }
+        self.count = new.count
+        self.content = new.content
+        self.error = new.error
     }
     
     override func worksBeforeCommit() -> [(inout AppState) -> Void] {
