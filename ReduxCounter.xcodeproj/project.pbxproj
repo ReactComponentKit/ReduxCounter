@@ -479,8 +479,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "git@github.com:ReactComponentKit/Redux.git";
 			requirement = {
-				branch = redux/next;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
