@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "Redux",
-        "repositoryURL": "git@github.com:ReactComponentKit/Redux.git",
+        "repositoryURL": "https://github.com/ReactComponentKit/Redux.git",
         "state": {
           "branch": null,
-          "revision": "7e6c748b2437cf278a9b1b44bac6b836b418fb62",
-          "version": "1.0.0"
+          "revision": "d4553a45b097a2b9bbd7480b6969ed987546170d",
+          "version": "1.1.0"
         }
       }
     ]

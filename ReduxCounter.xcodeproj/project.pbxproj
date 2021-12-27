@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4E04AB5D277A4E9400DC40C6 /* Redux in Frameworks */ = {isa = PBXBuildFile; productRef = 4E04AB5C277A4E9400DC40C6 /* Redux */; };
 		4E7E6E6525D17E2B008D351E /* ReduxCounterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E7E6E6425D17E2B008D351E /* ReduxCounterTests.swift */; };
-		4E7E6E7525D17F1B008D351E /* Redux in Frameworks */ = {isa = PBXBuildFile; productRef = 4E7E6E7425D17F1B008D351E /* Redux */; };
 		4E7E6E7925D17F2D008D351E /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E7E6E7825D17F2D008D351E /* Test.swift */; };
 		4EA4F4D725CC12CF005908ED /* ReduxCounterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA4F4D625CC12CF005908ED /* ReduxCounterApp.swift */; };
 		4EA4F4D925CC12CF005908ED /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EA4F4D825CC12CF005908ED /* ContentView.swift */; };
@@ -53,7 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E7E6E7525D17F1B008D351E /* Redux in Frameworks */,
+				4E04AB5D277A4E9400DC40C6 /* Redux in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,7 +144,7 @@
 			);
 			name = ReduxCounter;
 			packageProductDependencies = (
-				4E7E6E7425D17F1B008D351E /* Redux */,
+				4E04AB5C277A4E9400DC40C6 /* Redux */,
 			);
 			productName = ReduxCounter;
 			productReference = 4EA4F4D325CC12CF005908ED /* ReduxCounter.app */;
@@ -178,7 +178,7 @@
 			);
 			mainGroup = 4EA4F4CA25CC12CF005908ED;
 			packageReferences = (
-				4E7E6E7325D17F1B008D351E /* XCRemoteSwiftPackageReference "Redux" */,
+				4E04AB5B277A4E9400DC40C6 /* XCRemoteSwiftPackageReference "Redux" */,
 			);
 			productRefGroup = 4EA4F4D425CC12CF005908ED /* Products */;
 			projectDirPath = "";
@@ -475,20 +475,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4E7E6E7325D17F1B008D351E /* XCRemoteSwiftPackageReference "Redux" */ = {
+		4E04AB5B277A4E9400DC40C6 /* XCRemoteSwiftPackageReference "Redux" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:ReactComponentKit/Redux.git";
+			repositoryURL = "https://github.com/ReactComponentKit/Redux.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 1.1.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4E7E6E7425D17F1B008D351E /* Redux */ = {
+		4E04AB5C277A4E9400DC40C6 /* Redux */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4E7E6E7325D17F1B008D351E /* XCRemoteSwiftPackageReference "Redux" */;
+			package = 4E04AB5B277A4E9400DC40C6 /* XCRemoteSwiftPackageReference "Redux" */;
 			productName = Redux;
 		};
 /* End XCSwiftPackageProductDependency section */
