@@ -14,7 +14,7 @@ struct ComposeAppState: State {
 }
 
 class ComposeAppStore: Store<ComposeAppState> {
-    var counter = CounterStore();
+    let counter = CounterStore();
     let content = ContentStore();
     
     @Published
