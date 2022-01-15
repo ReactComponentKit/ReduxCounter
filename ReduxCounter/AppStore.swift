@@ -30,18 +30,20 @@ class AppStore: Store<AppState> {
     var error: String? = nil
     
     override func computed(new: AppState, old: AppState) {
-        self.count = new.count
-        self.content = new.content
-        self.error = new.error
+        if (self.count != new.count) {
+            self.count = new.count
+        }
+        
+        if (self.content != new.content) {
+            self.content = new.content
+        }
+        
+        if (self.error != new.error) {
+            self.error = new.error
+        }
     }
     
-    override func worksBeforeCommit() -> [(inout AppState) -> Void] {
-        return [ { (mutableState) in
-            mutableState.error = nil
-        }]
-    }
-    
-    override func worksAfterCommit() -> [(inout AppState) -> Void] {
+    override func worksAfterCommit() -> [(AppState) -> Void] {
         return [ { state in
             print(state.count)
         }]
@@ -59,7 +61,7 @@ class AppStore: Store<AppState> {
         state.content = payload
     }
     
-    private func SET_ERROR(state: inout AppState, payload: String) {
+    private func SET_ERROR(state: inout AppState, payload: String?) {
         state.error = payload
     }
     
@@ -73,8 +75,9 @@ class AppStore: Store<AppState> {
 
     func fetchContent() async {
         do {
-            let (data, _) = try await URLSession.shared.data(from: URL(string: "https://www.google.com")!)
+            let (data, _) = try await URLSession.shared.data(from: URL(string: "https://www.facebook.com")!)
             let value = String(data: data, encoding: .utf8) ?? ""
+            commit(mutation: SET_ERROR, payload: nil)
             commit(mutation: SET_CONTENT, payload: value)
         } catch {
             commit(mutation: SET_ERROR, payload: error.localizedDescription)

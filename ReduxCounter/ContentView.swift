@@ -52,10 +52,10 @@ struct ContentView: View {
                         .bold()
                         .multilineTextAlignment(.center)
                 }
-                ScrollView(.vertical) {
-                    Text(store.content ?? "")
-                }
-                .frame(width: UIScreen.main.bounds.width)
+                Text(store.content ?? "")
+                    .foregroundColor(.red)
+                    .font(.system(size: 12))
+                    .lineLimit(5)
             }
         }
         .padding(.horizontal, 100)
