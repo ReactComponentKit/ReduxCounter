@@ -10,8 +10,11 @@ import Redux
 
 @main
 struct ReduxCounterApp: App {
+//    @StateObject
+//    private var store: AppStore = AppStore()
+    
     @StateObject
-    private var store: AppStore = AppStore()
+    private var store: ComposeAppStore = ComposeAppStore()
     
     var body: some Scene {
         WindowGroup {

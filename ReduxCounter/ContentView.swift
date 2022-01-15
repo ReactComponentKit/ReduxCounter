@@ -10,22 +10,22 @@ import SwiftUI
 struct ContentView: View {
     
     @EnvironmentObject
-    private var store: AppStore
+    private var store: ComposeAppStore
     
     var body: some View {
         
         VStack {
-            Text("\(store.count)")
+            Text("\(store.counter.count)")
                 .font(.title)
                 .bold()
                 .padding()
-            if let error = store.error {
+            if let error = store.content.error {
                 Text("Error! \(error)")
             }
             HStack {
                 Spacer()
                 
-                Button(action: { store.decrementAction(payload: 1) }) {
+                Button(action: { store.counter.decrementAction(payload: 1) }) {
                     Text(" - ")
                         .font(.title)
                         .bold()
@@ -33,7 +33,7 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                Button(action: { store.incrementAction(payload: 1) }) {
+                Button(action: { store.counter.incrementAction(payload: 1) }) {
                     Text(" + ")
                         .font(.title)
                         .bold()
@@ -45,14 +45,28 @@ struct ContentView: View {
             VStack {
                 Button(action: {
                     Task {
-                        await store.fetchContent()
+                        await store.someComposeAction()
+                    }
+                }) {
+                    Text("All Length")
+                        .bold()
+                        .multilineTextAlignment(.center)
+                }
+                Text(store.allLength ?? "")
+                    .foregroundColor(.red)
+                    .font(.system(size: 12))
+                    .lineLimit(5)
+                
+                Button(action: {
+                    Task {
+                        await store.content.fetchContentValue()
                     }
                 }) {
                     Text("Fetch Content")
                         .bold()
                         .multilineTextAlignment(.center)
                 }
-                Text(store.content ?? "")
+                Text(store.content.value ?? "")
                     .foregroundColor(.red)
                     .font(.system(size: 12))
                     .lineLimit(5)

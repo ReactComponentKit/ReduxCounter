@@ -8,14 +8,17 @@
 import Foundation
 import Redux
 
+// We can define the AppStore like as below but it is not a good design.
+// If you add more state to the AppState, the AppStore becomes more massive store.
+@available(*, deprecated, renamed: "ComposeAppState")
 struct AppState: State {
     var count: Int = 0
     var content: String? = nil
     var error: String? = nil
 }
 
+@available(*, deprecated, renamed: "ComposeAppStore")
 class AppStore: Store<AppState> {
-    
     init() {
         super.init(state: AppState())
     }
