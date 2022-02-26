@@ -33,7 +33,7 @@ struct ContentView: View {
                 
                 Spacer()
                 
-                Button(action: { store.counter.incrementAction(payload: 1) }) {
+                Button(action: { store.counter.commit { $0.count += 1 } }) {
                     Text(" + ")
                         .font(.title)
                         .bold()
