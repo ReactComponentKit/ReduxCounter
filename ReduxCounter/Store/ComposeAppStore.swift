@@ -21,6 +21,9 @@ class ComposeAppStore: Store<ComposeAppState> {
     private var count = 0;
     
     @Published
+    private var isLoading = false;
+    
+    @Published
     private var contentValue: String? = nil;
     
     @Published
@@ -38,6 +41,7 @@ class ComposeAppStore: Store<ComposeAppState> {
     init() {
         super.init(state: ComposeAppState())
         counter.$count.assign(to: &self.$count)
+        content.$isLoading.assign(to: &self.$isLoading)
         content.$value.assign(to: &self.$contentValue)
         content.$error.assign(to: &self.$error)
     }

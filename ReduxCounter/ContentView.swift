@@ -57,14 +57,18 @@ struct ContentView: View {
                     .font(.system(size: 12))
                     .lineLimit(5)
                 
-                Button(action: {
-                    Task {
-                        await store.content.fetchContentValue()
+                if store.content.isLoading {
+                    ProgressView()
+                } else {
+                    Button(action: {
+                        Task {
+                            await store.content.fetchContentValue()
+                        }
+                    }) {
+                        Text("Fetch Content")
+                            .bold()
+                            .multilineTextAlignment(.center)
                     }
-                }) {
-                    Text("Fetch Content")
-                        .bold()
-                        .multilineTextAlignment(.center)
                 }
                 Text(store.content.value ?? "")
                     .foregroundColor(.red)
