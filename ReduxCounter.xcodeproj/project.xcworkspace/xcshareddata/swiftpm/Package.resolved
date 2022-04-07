@@ -1,16 +1,14 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Redux",
-        "repositoryURL": "https://github.com/ReactComponentKit/Redux.git",
-        "state": {
-          "branch": null,
-          "revision": "e4361b567ec9b0bcbb18b98592e527b3a7716b5c",
-          "version": "1.2.1"
-        }
+  "pins" : [
+    {
+      "identity" : "redux",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactComponentKit/Redux.git",
+      "state" : {
+        "revision" : "2dd0f78510be907a928067d22e720cf03763de74",
+        "version" : "1.2.2"
       }
-    ]
-  },
-  "version": 1
+    }
+  ],
+  "version" : 2
 }

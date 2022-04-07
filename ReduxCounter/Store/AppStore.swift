@@ -13,8 +13,7 @@ import Redux
 @available(*, deprecated, renamed: "ComposeAppState")
 struct AppState: State {
     var count: Int = 0
-    var content: String? = nil
-    var error: String? = nil
+    var content: Async<String> = .idle
 }
 
 @available(*, deprecated, renamed: "ComposeAppStore")
@@ -27,10 +26,7 @@ class AppStore: Store<AppState> {
     var count: Int = 0
     
     @Published
-    var content: String? = nil
-    
-    @Published
-    var error: String? = nil
+    var content: Async<String> = .idle
     
     override func computed(new: AppState, old: AppState) {
         if (self.count != new.count) {
@@ -39,10 +35,6 @@ class AppStore: Store<AppState> {
         
         if (self.content != new.content) {
             self.content = new.content
-        }
-        
-        if (self.error != new.error) {
-            self.error = new.error
         }
     }
     
@@ -60,14 +52,6 @@ class AppStore: Store<AppState> {
         state.count -= payload
     }
     
-    private func SET_CONTENT(state: inout AppState, payload: String) {
-        state.content = payload
-    }
-    
-    private func SET_ERROR(state: inout AppState, payload: String?) {
-        state.error = payload
-    }
-    
     func incrementAction(payload: Int) {
         commit(mutation: INCREMENT, payload: payload)
     }
@@ -78,12 +62,12 @@ class AppStore: Store<AppState> {
 
     func fetchContent() async {
         do {
+            commit { $0.content = .loading }
             let (data, _) = try await URLSession.shared.data(from: URL(string: "https://www.facebook.com")!)
             let value = String(data: data, encoding: .utf8) ?? ""
-            commit(mutation: SET_ERROR, payload: nil)
-            commit(mutation: SET_CONTENT, payload: value)
+            commit { $0.content = .value(value: value) }
         } catch {
-            commit(mutation: SET_ERROR, payload: error.localizedDescription)
+            commit { $0.content = .error(value: error) }
         }
     }
 }
