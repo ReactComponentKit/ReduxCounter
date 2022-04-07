@@ -21,14 +21,8 @@ class ComposeAppStore: Store<ComposeAppState> {
     private var count = 0;
     
     @Published
-    private var isLoading = false;
-    
-    @Published
-    private var contentValue: String? = nil;
-    
-    @Published
-    private var error: String? = nil;
-    
+    private var contentValue: Async<String> = .idle
+
     @Published
     var allLength: String? = nil;
     
@@ -41,9 +35,7 @@ class ComposeAppStore: Store<ComposeAppState> {
     init() {
         super.init(state: ComposeAppState())
         counter.$count.assign(to: &self.$count)
-        content.$isLoading.assign(to: &self.$isLoading)
         content.$value.assign(to: &self.$contentValue)
-        content.$error.assign(to: &self.$error)
     }
     
     // Examples of actions and state mutations that depend on the state and actions of other stores are
@@ -52,6 +44,8 @@ class ComposeAppStore: Store<ComposeAppState> {
     }
     func someComposeAction() async {
         await content.fetchContentValue()
-        commit(mutation: SET_ALL_LENGTH, payload: "counter: \(counter.state.count), content: \(content.state.value?.count ?? 0)")
+        if case let .value(value) = content.state.value {
+            commit(mutation: SET_ALL_LENGTH, payload: "counter: \(counter.state.count), content: \(value.count)")
+        }
     }
 }

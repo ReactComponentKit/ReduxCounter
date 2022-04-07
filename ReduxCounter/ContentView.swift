@@ -13,14 +13,13 @@ struct ContentView: View {
     private var store: ComposeAppStore
     
     var body: some View {
-        
         VStack {
             Text("\(store.counter.count)")
                 .font(.title)
                 .bold()
                 .padding()
-            if let error = store.content.error {
-                Text("Error! \(error)")
+            if case .error(let error) = store.content.value {
+                Text("Error! \(error?.localizedDescription ?? "")")
             }
             HStack {
                 Spacer()
@@ -57,7 +56,7 @@ struct ContentView: View {
                     .font(.system(size: 12))
                     .lineLimit(5)
                 
-                if store.content.isLoading {
+                if store.content.value == .loading {
                     ProgressView()
                 } else {
                     Button(action: {
@@ -70,10 +69,12 @@ struct ContentView: View {
                             .multilineTextAlignment(.center)
                     }
                 }
-                Text(store.content.value ?? "")
-                    .foregroundColor(.red)
-                    .font(.system(size: 12))
-                    .lineLimit(5)
+                if case let .value(value) = store.content.value {
+                    Text(value)
+                        .foregroundColor(.red)
+                        .font(.system(size: 12))
+                        .lineLimit(5)
+                }
             }
         }
         .padding(.horizontal, 100)

@@ -9,32 +9,16 @@ import Foundation
 import Redux
 
 struct Content: State {
-    var isLoading: Bool = false
-    var value: String? = nil
-    var error: String? = nil
+    var value: Async<String> = .idle
 }
 
 class ContentStore: Store<Content> {
     @Published
-    var isLoading: Bool = false
-    
-    @Published
-    var value: String? = nil
-    
-    @Published
-    var error: String? = nil
+    var value: Async<String> = .idle
     
     override func computed(new: Content, old: Content) {
-        if (self.isLoading != new.isLoading) {
-            self.isLoading = new.isLoading
-        }
-        
-        if (self.value != new.value) {
+        if new.value != old.value {
             self.value = new.value
-        }
-        
-        if (self.error != new.error) {
-            self.error = new.error
         }
     }
     
@@ -45,34 +29,19 @@ class ContentStore: Store<Content> {
     override func worksAfterCommit() -> [(Content) -> Void] {
         return [
             { state in
-                print(state.value ?? "없음")
+                print(state.value)
             }
         ]
     }
     
-    private func SET_IS_LOADING(state: inout Content, payload: Bool) {
-        state.isLoading = payload
-    }
-    
-    private func SET_CONTENT_VALUE(state: inout Content, payload: String) {
-        state.value = payload
-    }
-    
-    private func SET_ERROR(state: inout Content, payload: String?) {
-        state.error = payload
-    }
-    
     func fetchContentValue() async {
         do {
-            commit(mutation: SET_IS_LOADING, payload: true)
+            commit { $0.value = .loading }
             let (data, _) = try await URLSession.shared.data(from: URL(string: "https://www.facebook.com")!)
             let value = String(data: data, encoding: .utf8) ?? ""
-            commit(mutation: SET_ERROR, payload: nil)
-            commit(mutation: SET_CONTENT_VALUE, payload: value)
-            commit(mutation: SET_IS_LOADING, payload: false)
+            commit { $0.value = .value(value: value) }
         } catch {
-            commit(mutation: SET_IS_LOADING, payload: false)
-            commit(mutation: SET_ERROR, payload: error.localizedDescription)
+            commit { $0.value = .error(value: error) }
         }
     }
 }
